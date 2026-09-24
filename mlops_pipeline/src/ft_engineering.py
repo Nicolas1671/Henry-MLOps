@@ -25,7 +25,6 @@ NUMERIC_COLUMNS = [
     "cuota_pactada",
     "saldo_total",
     "saldo_principal",
-    "puntaje",
     "puntaje_datacredito",
     "huella_consulta",
     "plazo_meses",
@@ -38,6 +37,13 @@ NUMERIC_COLUMNS = [
     "creditos_sectorReal",
 ]
 
+# NOTA: se descarta "puntaje" (score interno) por alta correlación con el target,
+# confirmado en comprension_eda.ipynb (sección 5). Es muy probable que se calcule
+# usando información posterior al desembolso (ej. comportamiento de pago), lo cual
+# constituye data leakage: el modelo "vería" el futuro al entrenar.
+# "puntaje_datacredito" SÍ se mantiene: es un score de buró externo, disponible
+# al momento de originar el crédito.
+
 CATEGORICAL_COLUMNS = [
     "tipo_laboral", 
     #"tendencia_ingresos",
@@ -48,10 +54,18 @@ CATEGORICAL_ORDINAL_COLUMNS = [
 ]
 ordinal_categories = [[4,6,7,9,10,68]]
 
+# Límites de negocio para edad_cliente (evita valores imposibles: negativos, >100, etc.)
+EDAD_MIN = 18
+EDAD_MAX = 90
 
 #Cargamos los datos
-def load_data():
-    return pd.read_excel(Path(__file__).parent.parent.parent / 'Base_de_datos.xlsx')
+def load_data():    
+    data = pd.read_excel(Path(__file__).parent.parent.parent / 'Base_de_datos.xlsx')    
+    # Corregimos outliers/errores de captura en edad_cliente con un recorte (clip)
+    # en vez de eliminar filas: mantiene el volumen de datos y evita perder señal
+    # de otras variables del mismo registro.
+    data["edad_cliente"] = data["edad_cliente"].clip(lower=EDAD_MIN, upper=EDAD_MAX)
+    return data
 
 def build_features_pipeline(
         NUMERIC_COLUMNS = NUMERIC_COLUMNS, 

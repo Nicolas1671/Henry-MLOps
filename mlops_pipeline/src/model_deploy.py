@@ -72,7 +72,6 @@ class CreditoRequest(BaseModel):
     salario_cliente: int
     total_otros_prestamos: int
     cuota_pactada: int
-    puntaje: float
     puntaje_datacredito: Optional[float] = None
     cant_creditosvigentes: int
     huella_consulta: int
@@ -84,7 +83,6 @@ class CreditoRequest(BaseModel):
     creditos_sectorCooperativo: int
     creditos_sectorReal: int
     promedio_ingresos_datacredito: Optional[float] = None
-    tendencia_ingresos: Optional[str] = None
 
     model_config = {
         "json_schema_extra": {
@@ -98,7 +96,6 @@ class CreditoRequest(BaseModel):
                 "salario_cliente": 8000000,
                 "total_otros_prestamos": 2500000,
                 "cuota_pactada": 341296,
-                "puntaje": 88.768094,
                 "puntaje_datacredito": 695.0,
                 "cant_creditosvigentes": 10,
                 "huella_consulta": 5,
@@ -110,7 +107,6 @@ class CreditoRequest(BaseModel):
                 "creditos_sectorCooperativo": 0,
                 "creditos_sectorReal": 0,
                 "promedio_ingresos_datacredito": 908526.0,
-                "tendencia_ingresos": "Estable",
             }
         }
     }
