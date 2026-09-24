@@ -14,6 +14,7 @@ con el mecanismo que soporta:
 Selecciona el modelo con mejor ROC-AUC en test y lo retorna.
 """
 from pathlib import Path
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -34,6 +35,8 @@ from ft_engineering import (
     RANDOM_STATE,
 )
 
+MODELS_DIR = Path("mlops_pipeline/models")
+MODEL_PATH = MODELS_DIR / "best_model_pipeline.joblib"
 
 def get_scale_pos_weight(y_train):
     """Calcula el ratio negativos/positivos para XGBoost."""
@@ -164,6 +167,24 @@ def build_full_pipeline(preprocessor_pipeline, model):
         ("model", model),
     ])
 
+def save_best_pipeline(full_pipeline, best_name, best_auc, output_path=MODEL_PATH):
+    """
+    Serializa el pipeline completo (preprocesador + mejor modelo) a un archivo joblib,
+    junto con metadata útil para servir el modelo en producción (FastAPI).
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    artifact = {
+        "pipeline": full_pipeline,
+        "model_name": best_name,
+        "roc_auc": best_auc,
+    }
+
+    joblib.dump(artifact, output_path)
+    print(f"\nPipeline guardado en: {output_path}")
+    return output_path
+
 
 def run_training_evaluation():
     """Flujo completo: carga datos, preprocesa, entrena, evalúa y selecciona el mejor modelo."""
@@ -179,6 +200,7 @@ def run_training_evaluation():
     best_name, best_model, best_auc = select_best_model(results)
 
     full_pipeline = build_full_pipeline(preprocessor_pipeline, best_model)
+    model_path = save_best_pipeline(full_pipeline, best_name, best_auc)
 
     return {
         "best_model_name": best_name,
@@ -186,6 +208,7 @@ def run_training_evaluation():
         "best_auc": best_auc,
         "full_pipeline": full_pipeline,
         "all_results": results,
+        "model_path": model_path,
     }
 
 
@@ -193,6 +216,7 @@ if __name__ == "__main__":
     output = run_training_evaluation()
     print(f"\nModelo final seleccionado: {output['best_model_name']} "
           f"con ROC-AUC={output['best_auc']:.4f}")
+    print(f"Guardado en: {output['model_path']}")
     print("\nResultados de todos los modelos:")
     for name, (model, roc_auc) in output['all_results'].items():
         print(f"- {name}: ROC-AUC={roc_auc:.4f}")
