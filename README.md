@@ -255,3 +255,64 @@ Al finalizar el flujo completo vas a tener:
 - **API:** `FastAPI`, `uvicorn`, `pydantic`
 - **UI:** `Streamlit`, `plotly`
 - **Monitoreo estadístico:** `scipy` (KS test, Chi², Jensen-Shannon)
+
+
+## 🐳 Imagen Docker
+
+La API se empaqueta en una imagen Docker autocontenida, lista para correr en
+cualquier entorno sin instalar Python ni dependencias manualmente.
+
+### Contenido de la imagen
+
+- Base: `python:3.12-slim` (alineada con la versión de Python del entorno de
+  desarrollo, evitando incompatibilidades como la de `xgboost==3.4.1`, que
+  requiere Python ≥3.12).
+- Dependencias fijadas en `requirements.txt` (`scikit-learn==1.9.0`,
+  `xgboost==3.4.1`, `fastapi`, `uvicorn`, etc.), instaladas en una capa separada
+  del código para aprovechar el cache de Docker en rebuilds.
+- Código fuente completo de `mlops_pipeline/`, incluyendo el modelo ya
+  entrenado (`best_model_pipeline.joblib`), generado previamente por
+  `model_training_evaluation.py`.
+- Servidor **Uvicorn** exponiendo la API FastAPI en el puerto `8000`.
+
+### Build de la imagen
+
+```powershell
+docker build -t riesgo-crediticio-api .
+```
+
+> El modelo (`.joblib`) debe existir **antes** de este paso. Si no corriste
+> `model_training_evaluation.py` todavía, hacelo primero (ver sección
+> "Cómo correr el proyecto").
+
+### Correr el contenedor
+
+```powershell
+docker run -p 8000:8000 riesgo-crediticio-api
+```
+
+La API queda disponible en:
+- Documentación interactiva: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- Chequeo de salud: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+
+> Si el puerto 8000 ya está en uso (por ejemplo por otro contenedor corriendo),
+> mapealo a otro puerto local: `docker run -p 8001:8000 riesgo-crediticio-api`.
+
+### Verificar imágenes y contenedores
+
+```powershell
+docker images              # Ver la imagen creada localmente
+docker ps                  # Ver contenedores corriendo
+docker ps -a                # Ver también contenedores detenidos
+```
+
+### Detener el contenedor
+
+```powershell
+docker stop <CONTAINER_ID>
+```
+
+> ℹ️ **Nota:** esta imagen se construye y prueba de forma **local**
+> (`docker build` + `docker run`). No se publicó en un registro remoto
+> (Docker Hub / ECR) porque no era un requisito de la consigna; si se
+> necesitara distribuirla, el proceso sería `docker tag` + `docker push`.
