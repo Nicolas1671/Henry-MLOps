@@ -25,7 +25,9 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-MODEL_PATH = Path("mlops_pipeline/models/best_model_pipeline.joblib")
+
+MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "best_model_pipeline.joblib"
+
 
 # --------------------------------------------------------------------------- #
 # Carga del modelo (una sola vez, al levantar la API)

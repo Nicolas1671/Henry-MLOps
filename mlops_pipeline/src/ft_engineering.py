@@ -80,11 +80,13 @@ def build_features_pipeline(
     return Pipeline(steps=[('preprocessor', preprocessor)])
 
 def split_features_target(
-        data = load_data(), 
+        data = None, 
         target_column=TARGET_COLUMN, 
         test_size=TEST_SIZE, 
         random_state=RANDOM_STATE
     ):
+    if data is None:
+        data = load_data()
     X = data.drop(columns=[target_column])
     y = data[target_column]
 
