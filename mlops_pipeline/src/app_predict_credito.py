@@ -92,7 +92,6 @@ with tab1:
         with col2:
             total_otros_prestamos = st.number_input("Total otros préstamos", min_value=0, value=0, step=100000)
             cuota_pactada = st.number_input("Cuota pactada", min_value=0, value=250000, step=10000)
-            puntaje = st.number_input("Puntaje (score interno)", min_value=0.0, max_value=100.0, value=75.0)
             puntaje_datacredito = st.number_input("Puntaje Datacrédito", min_value=0.0, max_value=1000.0, value=700.0)
             cant_creditosvigentes = st.number_input("Créditos vigentes", min_value=0, value=2, step=1)
             huella_consulta = st.number_input("Huella de consulta", min_value=0, value=2, step=1)
@@ -108,7 +107,6 @@ with tab1:
             promedio_ingresos_datacredito = st.number_input(
                 "Promedio ingresos Datacrédito", min_value=0.0, value=900000.0, step=10000.0
             )
-            tendencia_ingresos = st.selectbox("Tendencia de ingresos", TENDENCIAS_INGRESOS)
 
         submitted = st.form_submit_button("🔮 Predecir")
 
@@ -123,7 +121,6 @@ with tab1:
             "salario_cliente": int(salario_cliente),
             "total_otros_prestamos": int(total_otros_prestamos),
             "cuota_pactada": int(cuota_pactada),
-            "puntaje": float(puntaje),
             "puntaje_datacredito": float(puntaje_datacredito),
             "cant_creditosvigentes": int(cant_creditosvigentes),
             "huella_consulta": int(huella_consulta),
@@ -135,7 +132,6 @@ with tab1:
             "creditos_sectorCooperativo": int(creditos_sectorCooperativo),
             "creditos_sectorReal": int(creditos_sectorReal),
             "promedio_ingresos_datacredito": float(promedio_ingresos_datacredito),
-            "tendencia_ingresos": tendencia_ingresos,
         }
 
         with st.spinner("Consultando modelo..."):

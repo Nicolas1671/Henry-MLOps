@@ -67,7 +67,7 @@ Imputadas con la **mediana**:
 
 `edad_cliente`, `capital_prestado`, `promedio_ingresos_datacredito`,
 `total_otros_prestamos`, `cuota_pactada`, `saldo_total`, `saldo_principal`,
-`puntaje`, `puntaje_datacredito`, `huella_consulta`, `plazo_meses`,
+`puntaje_datacredito`, `huella_consulta`, `plazo_meses`,
 `salario_cliente`, `cant_creditosvigentes`, `saldo_mora`, `saldo_mora_codeudor`,
 `creditos_sectorFinanciero`, `creditos_sectorCooperativo`, `creditos_sectorReal`
 
@@ -85,6 +85,48 @@ Imputada con la **moda** + **Ordinal Encoding** con categorías fijas:
 > pero **no se usan** como input del modelo (la segunda está deshabilitada
 > explícitamente en `ft_engineering.py`). No es necesario enviarlas a la API,
 > aunque no rompe nada si se incluyen (se ignoran).
+
+---
+
+## 🔍 Decisiones de calidad de datos (EDA → Feature Engineering)
+
+Durante el análisis exploratorio (`comprension_eda.ipynb`) se detectaron 3 problemas
+que impactan directamente en la validez del modelo. Se documentan acá las decisiones
+tomadas y su justificación:
+
+### 1. Exclusión de `puntaje` por data leakage
+
+En la sección 5 del EDA (`comprension_eda.ipynb`), `puntaje` resultó ser la variable
+con **mayor correlación absoluta** con el target `Pago_atiempo`. Un análisis posterior
+mostró indicios de que este score interno se calcula usando información **posterior**
+al desembolso del crédito (comportamiento de pago ya observado), lo cual constituye
+**data leakage**: el modelo "vería el futuro" al entrenar, generando una métrica de
+ROC-AUC artificialmente alta que no se replicaría en producción con datos reales.
+
+**Decisión:** se descarta `puntaje` como feature. Se mantiene `puntaje_datacredito`,
+que es un score de buró **externo**, disponible legítimamente al momento de originar
+el crédito.
+
+### 2. Corrección de outliers en `edad_cliente`
+
+El EDA detectó valores imposibles (mayores a 90 años), producto de
+errores de captura. En vez de eliminar esos registros (lo que perdería información
+válida del resto de las columnas), se aplicó un **recorte (`clip`)** de la variable al
+rango `[18, 90]` dentro de `load_data()` en `ft_engineering.py`. Esto garantiza que el
+mismo tratamiento se aplique tanto en entrenamiento como en cualquier dato nuevo que
+reciba la API en producción.
+
+### 3. Exclusión de `tendencia_ingresos`
+
+Esta columna categórica presentó valores inconsistentes (números, texto libre y
+categorías sin sentido de negocio), producto de errores de carga/captura. Dado el
+costo de limpieza vs. el beneficio incierto, se decidió **excluirla del modelo** por
+ahora. Queda documentada como mejora futura si se logra sanear la fuente de datos.
+
+> 📌 Estas decisiones impactan únicamente en `ft_engineering.py`. Gracias a que el
+> pipeline completo (preprocesamiento + modelo) se serializa como una sola unidad en
+> `best_model_pipeline.joblib`, **no fue necesario modificar** la API, la UI de
+> Streamlit ni el Dockerfile: todos consumen el pipeline como caja negra.
 
 ---
 
