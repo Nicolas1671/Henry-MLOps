@@ -64,7 +64,6 @@ app = FastAPI(
 # --------------------------------------------------------------------------- #
 class CreditoRequest(BaseModel):
     tipo_credito: int
-    fecha_prestamo: datetime
     capital_prestado: float
     plazo_meses: int
     edad_cliente: int
@@ -88,7 +87,6 @@ class CreditoRequest(BaseModel):
         "json_schema_extra": {
             "example": {
                 "tipo_credito": 7,
-                "fecha_prestamo": "2024-12-21T11:31:35",
                 "capital_prestado": 3692160.0,
                 "plazo_meses": 10,
                 "edad_cliente": 42,

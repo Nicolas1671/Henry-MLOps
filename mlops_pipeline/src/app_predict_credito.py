@@ -25,8 +25,6 @@ st.set_page_config(page_title="Predicción de Riesgo Crediticio", layout="wide")
 st.title("💳 Predicción de Riesgo Crediticio")
 
 TIPOS_LABORALES = ["Independiente", "Empleado", "Pensionado", "Otro"]
-TENDENCIAS_INGRESOS = ["Estable", "Creciente", "Decreciente"]
-
 
 # --------------------------------------------------------------------------- #
 # Helpers
@@ -82,7 +80,6 @@ with tab1:
 
         with col1:
             tipo_credito = st.number_input("Tipo de crédito", min_value=0, value=7, step=1)
-            fecha_prestamo = st.date_input("Fecha del préstamo", value=date.today())
             capital_prestado = st.number_input("Capital prestado", min_value=0.0, value=3_000_000.0, step=1000.0)
             plazo_meses = st.number_input("Plazo (meses)", min_value=1, value=12, step=1)
             edad_cliente = st.number_input("Edad del cliente", min_value=18, max_value=100, value=35, step=1)
@@ -113,7 +110,6 @@ with tab1:
     if submitted:
         payload = {
             "tipo_credito": int(tipo_credito),
-            "fecha_prestamo": fecha_prestamo.isoformat(),
             "capital_prestado": float(capital_prestado),
             "plazo_meses": int(plazo_meses),
             "edad_cliente": int(edad_cliente),
